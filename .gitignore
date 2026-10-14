@@ -51,3 +51,6 @@ screenshots/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Archivo de juegos Steam
+steam_games.json

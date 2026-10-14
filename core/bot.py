@@ -3,11 +3,14 @@ Cliente y controlador de eventos de Discord para Aigis.
 Gestiona el ciclo de vida del bot, filtrado de seguridad, y despacho de respuestas.
 """
 from pathlib import Path
+from typing import Any
 import discord
 from discord.ext import commands
 from config import config, logger
 from core.security import security
 from core.brain import brain
+import aiohttp
+import json
 
 
 class AigisBot(commands.Bot):
@@ -24,6 +27,15 @@ class AigisBot(commands.Bot):
     async def setup_hook(self):
         """Se ejecuta antes de conectar el bot."""
         logger.info("Iniciando componentes de Aigis...")
+        logger.info("Iniciando cliente...")
+        self.session = aiohttp.ClientSession()
+        logger.info("Cliente iniciado correctamente")
+
+        # Cargar archivo de juegos de Steam si está configurado
+        if config.steam_url_api and config.steam_api_key:
+            logger.info("[CONFIGURACION]: Configuración de Steam detectada. Cargando archivo de juegos...")
+            from tools.steam_tools import get_games
+            await get_games()
 
     async def on_ready(self):
         """Notificación cuando el bot se conecta exitosamente a Discord."""
@@ -106,5 +118,24 @@ class AigisBot(commands.Bot):
             logger.error("Error al enviar respuesta a Discord: %s", e)
             await message.channel.send(f"Ocurrió un error al enviar la respuesta: {e}")
 
+    async def close(self):
+        if hasattr(self, "session") and self.session and not self.session.closed:
+            await self.session.close()
+        await super().close()
+
+    async def get_api_reponse(self, url: str, params: dict | None = None) -> dict[str, Any] | None:
+        try:
+            async with self.session.get(url, params=params) as response:
+                if response.status == 200:
+                    return await response.json()
+                else:
+                    logger.warning(f"Error en la peticion: {response.status}")
+                    return None
+        except Exception as e:
+            logger.error(f"Error de conexión: {e}")
+            return None
+
+    # Alias para evitar errores por tipografía
+    get_api_response = get_api_reponse
 
 bot = AigisBot()

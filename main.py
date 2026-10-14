@@ -9,7 +9,7 @@ from core.scheduler import scheduler
 from core.bot import bot
 
 
-def main():
+async def main():
     print(r"""
        /\  _       _     
       /  \| |     (_)    
@@ -41,7 +41,8 @@ def main():
     # Arrancar el bot de Discord
     try:
         logger.info("Iniciando conexión con Discord...")
-        bot.run(config.discord_token)
+        async with bot:
+            await bot.start(config.discord_token)
     except KeyboardInterrupt:
         logger.info("Interrupción por teclado detectada. Cerrando Aigis...")
     except Exception as e:
@@ -52,4 +53,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
