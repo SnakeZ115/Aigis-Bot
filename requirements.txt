@@ -1,0 +1,16 @@
+# Discord API
+discord.py>=2.3.2
+
+# LLM Local (Ollama)
+ollama>=0.4.0
+
+# Task Scheduling
+apscheduler>=3.10.4
+
+# Environment & Settings
+python-dotenv>=1.0.1
+pydantic>=2.6.0
+
+# System monitoring & utilities
+psutil>=5.9.8
+Pillow>=10.2.0
