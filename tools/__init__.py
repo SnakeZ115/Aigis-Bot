@@ -4,6 +4,7 @@ Expone los esquemas de herramientas para Ollama (Function Calling)
 y el despachador de ejecución.
 """
 from typing import Any
+import inspect
 from config import logger
 from tools.system_tools import (
     schedule_shutdown,
@@ -23,6 +24,7 @@ from tools.util_tools import (
     list_scheduled_tasks,
     cancel_scheduled_task,
 )
+from tools.steam_tools import get_game_reviews
 
 # Definiciones de herramientas compatibles con Ollama / OpenAI Tool Calling Schema
 TOOL_DEFINITIONS = [
@@ -187,6 +189,23 @@ TOOL_DEFINITIONS = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_game_reviews",
+            "description": "Busca un juego de Steam por su nombre y obtiene el resumen de calificaciones, porcentaje de aprobación y reseñas de la comunidad.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "game_name": {
+                        "type": "string",
+                        "description": "Nombre del videojuego a buscar (ej: Cyberpunk 2077, Hollow Knight, Elden Ring, Portal 2).",
+                    }
+                },
+                "required": ["game_name"],
+            },
+        },
+    },
 ]
 
 # Diccionario de funciones ejecutables
@@ -203,11 +222,12 @@ TOOL_FUNCTIONS = {
     "take_screenshot": take_screenshot,
     "list_scheduled_tasks": list_scheduled_tasks,
     "cancel_scheduled_task": cancel_scheduled_task,
+    "get_game_reviews": get_game_reviews,
 }
 
 
-def execute_tool(tool_name: str, arguments: dict[str, Any]) -> Any:
-    """Ejecuta una herramienta por nombre con los argumentos proporcionados."""
+async def execute_tool(tool_name: str, arguments: dict[str, Any]) -> Any:
+    """Ejecuta una herramienta por nombre (síncrona o asíncrona) con los argumentos proporcionados."""
     func = TOOL_FUNCTIONS.get(tool_name)
     if not func:
         logger.error("Herramienta no encontrada: '%s'", tool_name)
@@ -215,7 +235,10 @@ def execute_tool(tool_name: str, arguments: dict[str, Any]) -> Any:
 
     logger.info("Ejecutando herramienta '%s' con argumentos: %s", tool_name, arguments)
     try:
-        result = func(**arguments)
+        if inspect.iscoroutinefunction(func):
+            result = await func(**arguments)
+        else:
+            result = func(**arguments)
         return result
     except Exception as e:
         logger.error("Error al ejecutar '%s': %s", tool_name, e)

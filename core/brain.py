@@ -19,7 +19,12 @@ Instrucciones de comportamiento:
 4. Si el usuario pide cancelar un apagado, llama a 'cancel_shutdown'.
 5. Si el usuario pide saber el estado del sistema, llama a 'get_system_status' y resume los datos amigablemente.
 6. Si el usuario te pide tomar captura de pantalla, llama a 'take_screenshot'.
-7. Responde en el mismo idioma en el que te habla el usuario (generalmente español).
+7. Si el usuario te pregunta qué opina la gente sobre un juego, si vale la pena o pide reseñas de Steam (ej: "¿qué opina la gente de Portal 2?"), llama a 'get_game_reviews'. Con los datos obtenidos, elabora un resumen amigable, estructurado y conciso:
+   - Calificación general en Steam y porcentaje de aprobación.
+   - Puntos fuertes más elogiados por los jugadores.
+   - Críticas o quejas recurrentes (si las hay).
+   - Conclusión breve.
+8. Responde en el mismo idioma en el que te habla el usuario (generalmente español).
 """
 
 
@@ -96,7 +101,7 @@ class AigisBrain:
                     tools_executed.append(fn_name)
 
                     # Ejecutar la herramienta física en el sistema
-                    tool_output = execute_tool(fn_name, fn_args)
+                    tool_output = await execute_tool(fn_name, fn_args)
 
                     # Manejo especial si la herramienta produjo una captura de pantalla
                     if fn_name == "take_screenshot" and isinstance(tool_output, dict):

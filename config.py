@@ -28,6 +28,10 @@ class Config:
     prefix: str
     allowed_channel_id: int | None
 
+    # Steam
+    steam_api_key: str | None
+    steam_url_api: str | None
+
     # Ollama
     ollama_host: str
     ollama_model: str
@@ -42,6 +46,8 @@ class Config:
     def load(cls) -> "Config":
         token = os.getenv("DISCORD_BOT_TOKEN", "").strip()
         raw_owner_id = os.getenv("DISCORD_OWNER_ID", "").strip()
+        steam_api_key = os.getenv("STEAM_API_KEY", "").strip()
+        steam_url_api = os.getenv("STEAM_API_URL", "").strip()
 
         if not token or token == "tu_token_aqui":
             print("[ADVERTENCIA] 'DISCORD_BOT_TOKEN' no está configurado o tiene el valor por defecto en .env.")
@@ -52,6 +58,12 @@ class Config:
                 owner_id = int(raw_owner_id)
             except ValueError:
                 print(f"[ERROR] 'DISCORD_OWNER_ID' debe ser un número entero válido. Valor actual: '{raw_owner_id}'")
+
+        if not steam_api_key:
+            print("[ADVERTENCIA]: 'STEAM_API_KEY' no está configurada. Aigis no podrá utilizar las herramientas de Steam... ")
+
+        if not steam_url_api:
+            print("[ADVERTENCIA]: 'STEAM_URL_API' no está configurada. Aigis no podrá utilizar las herramientas de Steam... ")
 
         raw_channel_id = os.getenv("DISCORD_ALLOWED_CHANNEL_ID", "").strip()
         allowed_channel_id = int(raw_channel_id) if raw_channel_id.isdigit() else None
@@ -67,6 +79,8 @@ class Config:
             assistant_name=os.getenv("ASSISTANT_NAME", "Aigis"),
             log_level=os.getenv("LOG_LEVEL", "INFO").upper(),
             base_dir=BASE_DIR,
+            steam_api_key=steam_api_key,
+            steam_url_api=steam_url_api
         )
 
 
